@@ -12,7 +12,7 @@
 - `data/` — 学習データの説明。`raw/` と `processed/` の実データはGit管理外
 - `artifacts/` — 評価結果など。チェックポイントはGit管理外
 - `docker/`、`compose.yaml` — 再現可能な実行環境
-- `front/` — 将来のエージェントUI用。学習基盤の初期段階では使用しない
+- `front/src/` — React UI。機能単位のコンポーネント、hooks、services、テスト
 
 ## 開発・検証コマンド
 
@@ -22,6 +22,11 @@
 - `uv run --project back --extra cpu pytest` — ホスト環境で全テストを実行
 - `uv run --project back --extra cpu ruff check back` — ホスト環境でlintを実行
 - `uv run --project back --extra cpu mypy back/src` — ホスト環境で型検査を実行
+- `npm --prefix front run dev` — Vite開発サーバーを起動
+- `npm --prefix front run build` — 型検査後に本番用アセットを生成
+- `npm --prefix front run test` — Vitestの全テストを実行
+- `npm --prefix front run lint` — OxlintでReact／TypeScript規約を検証
+- `npm --prefix front run format:check` — Prettierの整形差分を検証
 - `Copy-Item .env.example .env` — ローカル設定を作成
 - `docker compose build` — Python、PyTorch、開発依存を含むイメージを作成
 - `docker compose run --rm trainer pytest` — 全テストを実行
@@ -40,9 +45,13 @@ Python 3.12を対象とし、4スペースと型ヒントを使用します。Ru
 
 ### React / TypeScript
 
-TypeScriptはstrictモードと2スペースを使用し、ESLintとPrettierをCIで検証します。`any` は避け、外部入力は `unknown` として検証してから利用します。コンポーネント、型、interfaceは `PascalCase`、関数、変数、hooksは `camelCase`、定数は `UPPER_SNAKE_CASE` とします。コンポーネントファイルは `ChatPanel.tsx`、hooksは `useChatSession.ts`、テストは `ChatPanel.test.tsx` の形式にします。
+TypeScriptはstrictモードと2スペースを使用し、Oxlint、`tsc`、PrettierをCIで検証します。`any` は禁止し、Oxlintの `typescript/no-explicit-any` を無効化してはいけません。外部入力は `unknown` として受け取り、型ガードまたはスキーマで検証してから利用します。型アサーションやnon-null assertion（`!`）で検査を迂回せず、必要な場合は理由をコメントしてください。
 
-関数コンポーネントと名前付きexportを基本とし、props型を明示してください。状態と副作用は必要な場所へ局所化し、派生値をstateへ重複保存しません。APIアクセスや業務ロジックを表示コンポーネントへ直接埋め込まず、hooksまたはfeature単位のserviceへ分離します。アクセシブルなHTML要素を優先し、クリック可能な `div` のような代替実装は避けてください。
+コンポーネント、型、interfaceは `PascalCase`、関数、変数、hooksは `camelCase`、定数は `UPPER_SNAKE_CASE` とします。コンポーネントファイルは `ChatPanel.tsx`、hooksは `useChatSession.ts`、テストは `ChatPanel.test.tsx` の形式にします。propsは明示したreadonlyな型で表し、イベント型にはReact提供の `ChangeEventHandler` などを使用します。
+
+関数コンポーネントと名前付きexportを基本とし、コンポーネント関数を直接呼ばずJSXで使用します。Hooksはコンポーネントまたはcustom hookのトップレベルでのみ呼び出します。状態と副作用は必要な場所へ局所化し、計算できる派生値をstateへ重複保存しません。`useEffect` は外部システムとの同期に限定します。
+
+APIアクセスや業務ロジックを表示コンポーネントへ直接埋め込まず、hooksまたはfeature単位のserviceへ分離します。アクセシブルなHTML要素を優先し、クリック可能な `div` のような代替実装は避けてください。ユーザーから見える振る舞いの変更にはTesting Libraryによるテストを追加し、実装詳細ではなくrole、label、表示内容を検証します。
 
 ## テストと実験
 

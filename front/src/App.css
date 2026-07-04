@@ -1,0 +1,66 @@
+.app-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 2rem;
+}
+
+.hero {
+  width: min(100%, 60rem);
+}
+
+.eyebrow {
+  color: #72d6bc;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+  margin: 0;
+  max-width: 13ch;
+}
+
+.summary {
+  color: #aeb8c4;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.8;
+  margin: 2rem 0 3rem;
+  max-width: 42rem;
+}
+
+.status-list {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  overflow: hidden;
+}
+
+.status-list div {
+  background: #151c25;
+  padding: 1.25rem;
+}
+
+.status-list dt {
+  color: #7f8a98;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.status-list dd {
+  font-weight: 600;
+  margin: 0.5rem 0 0;
+}
+
+@media (max-width: 40rem) {
+  .status-list {
+    grid-template-columns: 1fr;
+  }
+}

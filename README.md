@@ -32,6 +32,24 @@ docker compose run --rm trainer pytest
 docker compose run --rm trainer mini-llm-info
 ```
 
+## フロントエンド
+
+React、TypeScript、Viteを使用します。
+
+```powershell
+npm --prefix front install
+npm --prefix front run dev
+```
+
+品質チェックは次のコマンドで実行します。
+
+```powershell
+npm --prefix front run build
+npm --prefix front run test
+npm --prefix front run lint
+npm --prefix front run format:check
+```
+
 ## 現在の範囲
 
 `configs/model/tiny.yaml` は実装確認用であり、実用品質のモデルではありません。学習データと生成物はGit管理外です。データセットを追加するときは、出典、ライセンス、利用条件を必ず記録してください。
