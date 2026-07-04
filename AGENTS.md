@@ -16,15 +16,19 @@
 
 ## 開発・検証コマンド
 
-Dockerを標準環境とします。
+ホストではuv管理のPython 3.12.13とCPU版PyTorchを標準とし、Dockerで再現性を確認します。
 
+- `uv sync --project back --frozen --extra cpu` — `back/.venv` をlockfileどおり同期
+- `uv run --project back --extra cpu pytest` — ホスト環境で全テストを実行
+- `uv run --project back --extra cpu ruff check back` — ホスト環境でlintを実行
+- `uv run --project back --extra cpu mypy back/src` — ホスト環境で型検査を実行
 - `Copy-Item .env.example .env` — ローカル設定を作成
 - `docker compose build` — Python、PyTorch、開発依存を含むイメージを作成
 - `docker compose run --rm trainer pytest` — 全テストを実行
 - `docker compose run --rm trainer ruff check back` — lintを実行
 - `docker compose run --rm trainer mini-llm-info` — モデル規模と利用デバイスを確認
 
-ホスト環境を使う場合は `python -m pip install -e ".\back[dev]"` でインストールします。
+GPU環境だけ `uv sync --project back --frozen --extra gpu` を使います。`cpu` と `gpu` を同時に指定してはいけません。依存関係を変更した場合は `uv lock --project back` を実行し、`back/uv.lock` も更新してください。
 
 ## コーディング規約
 
@@ -32,7 +36,7 @@ Dockerを標準環境とします。
 
 ### Python
 
-Python 3.10以上を対象とし、4スペースと型ヒントを使用します。Ruff（行長100文字）とmypy strictを通してください。モジュール、関数、変数は `snake_case`、クラスは `PascalCase`、定数は `UPPER_SNAKE_CASE` とします。パス操作には `pathlib.Path`、データ構造には型付きdataclassを優先します。`Any`、可変なデフォルト引数、広すぎる `except Exception` は理由なく使用しないでください。テンソルを扱う関数では、入力・出力形状、dtype、device、値域の制約を型、検証処理、またはdocstringで明示します。
+Python 3.12を対象とし、4スペースと型ヒントを使用します。Ruff（行長100文字）とmypy strictを通してください。モジュール、関数、変数は `snake_case`、クラスは `PascalCase`、定数は `UPPER_SNAKE_CASE` とします。パス操作には `pathlib.Path`、データ構造には型付きdataclassを優先します。`Any`、可変なデフォルト引数、広すぎる `except Exception` は理由なく使用しないでください。テンソルを扱う関数では、入力・出力形状、dtype、device、値域の制約を型、検証処理、またはdocstringで明示します。
 
 ### React / TypeScript
 
