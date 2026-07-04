@@ -1,0 +1,16 @@
+services:
+  trainer:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./back:/workspace/back
+      - ./configs:/workspace/configs
+      - ./data:/workspace/data
+      - ./artifacts:/workspace/artifacts
+    working_dir: /workspace
+    command: ["pytest", "back/tests"]
+
