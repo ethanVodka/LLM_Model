@@ -28,7 +28,17 @@ Dockerを標準環境とします。
 
 ## コーディング規約
 
-Python 3.10以上を対象とし、4スペース、UTF-8、型ヒントを使用します。Ruffの行長は100文字、mypyはstrict設定です。モジュールと関数は `snake_case`、クラスは `PascalCase`、定数は `UPPER_SNAKE_CASE` とします。モデルの挙動を暗黙化せず、テンソル形状と制約をコードまたはdocstringで明確にしてください。
+すべてのファイルでUTF-8、LF、末尾改行を使用します。公開APIや複雑な処理には、実装内容ではなく目的・制約・副作用が分かる短いコメントを付けてください。
+
+### Python
+
+Python 3.10以上を対象とし、4スペースと型ヒントを使用します。Ruff（行長100文字）とmypy strictを通してください。モジュール、関数、変数は `snake_case`、クラスは `PascalCase`、定数は `UPPER_SNAKE_CASE` とします。パス操作には `pathlib.Path`、データ構造には型付きdataclassを優先します。`Any`、可変なデフォルト引数、広すぎる `except Exception` は理由なく使用しないでください。テンソルを扱う関数では、入力・出力形状、dtype、device、値域の制約を型、検証処理、またはdocstringで明示します。
+
+### React / TypeScript
+
+TypeScriptはstrictモードと2スペースを使用し、ESLintとPrettierをCIで検証します。`any` は避け、外部入力は `unknown` として検証してから利用します。コンポーネント、型、interfaceは `PascalCase`、関数、変数、hooksは `camelCase`、定数は `UPPER_SNAKE_CASE` とします。コンポーネントファイルは `ChatPanel.tsx`、hooksは `useChatSession.ts`、テストは `ChatPanel.test.tsx` の形式にします。
+
+関数コンポーネントと名前付きexportを基本とし、props型を明示してください。状態と副作用は必要な場所へ局所化し、派生値をstateへ重複保存しません。APIアクセスや業務ロジックを表示コンポーネントへ直接埋め込まず、hooksまたはfeature単位のserviceへ分離します。アクセシブルなHTML要素を優先し、クリック可能な `div` のような代替実装は避けてください。
 
 ## テストと実験
 
@@ -37,6 +47,10 @@ Python 3.10以上を対象とし、4スペース、UTF-8、型ヒントを使用
 ## データとセキュリティ
 
 データセットごとに出典、取得日、ライセンス、加工内容を記録します。個人情報、秘密鍵、認証情報、利用許諾のないコードを学習へ混入させないでください。秘密情報は `.env` に置き、`.env.example` には実値を書きません。
+
+## MCPの使い分け
+
+Serena MCPはシンボル検索、参照追跡、構造的な編集に使用します。Code Index MCPは横断検索、ファイル要約、大規模化後の永続インデックスに使用し、単純な検索では `rg` を優先してください。Chrome DevTools MCPはReact画面の動作、コンソール、ネットワーク、性能の検証に限定します。Chromeは分離された一時プロファイルで実行し、個人アカウントへのログインや機密情報の入力を避けてください。
 
 ## コミットとレビュー
 
