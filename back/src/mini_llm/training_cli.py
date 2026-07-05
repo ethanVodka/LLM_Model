@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +34,21 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("artifacts/checkpoints/tiny/latest.pt"),
     )
+    parser.add_argument(
+        "--resume",
+        type=Path,
+        help="resume model and optimizer state from a training checkpoint",
+    )
+    parser.add_argument(
+        "--metrics",
+        type=Path,
+        default=Path("artifacts/experiments/tiny/metrics.jsonl"),
+    )
+    parser.add_argument(
+        "--max-steps",
+        type=int,
+        help="override the total target step in the training config",
+    )
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     return parser
 
@@ -41,6 +57,8 @@ def main() -> None:
     args = build_parser().parse_args()
     model_config = ModelConfig.from_yaml(args.model_config)
     training_config = TrainingConfig.from_yaml(args.training_config)
+    if args.max_steps is not None:
+        training_config = replace(training_config, max_steps=args.max_steps)
     metadata = _load_metadata(args.dataset_dir / "metadata.json")
     _validate_compatibility(model_config, metadata)
 
@@ -60,9 +78,15 @@ def main() -> None:
         training_config,
         args.checkpoint,
         device=device,
+        resume_from=args.resume,
+        metrics_path=args.metrics,
         on_evaluate=_print_metrics,
     )
+    if result.initial_step > 0:
+        mode = "exact" if result.exact_resume else "legacy-compatible"
+        print(f"resumed_from_step={result.initial_step} mode={mode}")
     print(f"checkpoint={result.checkpoint_path}")
+    print(f"metrics={result.metrics_path}")
 
 
 def _load_metadata(path: Path) -> dict[str, Any]:
@@ -94,8 +118,10 @@ def _resolve_device(value: str) -> torch.device:
 def _print_metrics(metrics: TrainingMetrics) -> None:
     print(
         f"step={metrics.step} "
+        f"tokens_seen={metrics.tokens_seen} "
         f"train_loss={metrics.train_loss:.4f} "
         f"validation_loss={metrics.validation_loss:.4f} "
+        f"perplexity={metrics.perplexity:.2f} "
         f"grad_norm={metrics.grad_norm:.4f}"
     )
 

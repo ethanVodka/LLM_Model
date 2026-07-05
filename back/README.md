@@ -30,6 +30,15 @@ uv run --project back --extra cpu mini-llm-train --device cpu
 
 `configs/training/tiny.yaml` に従い、AdamW、Cross Entropy、勾配クリッピングを使っ20 stepだけ学習します。チェックポイントにはモデル、Optimizer、設定、最終指標を保存します。
 
+学習を合計40 stepまで再開する例:
+
+```powershell
+uv run --project back --extra cpu mini-llm-train --device cpu `
+  --resume artifacts/checkpoints/tiny/latest.pt --max-steps 40
+```
+
+新形式のチェックポイントはモデルとOptimizerに加え、PyTorchとバッチ抽選の乱数状態も保存します。`--max-steps` は追加step数ではなく、再開後の合計step数です。
+
 ## 生成
 
 ```powershell

@@ -82,6 +82,15 @@ uv run --project back --extra cpu mini-llm-train --device cpu
 
 学習中はtrain・validation lossと勾配normを表示し、最終状態をGit管理外の `artifacts/checkpoints/tiny/latest.pt` へ保存します。この20 step設定は学習処理の検証用であり、生成品質を得るための学習量ではありません。
 
+保存済みのstep 20から合計40 stepまで続ける場合は次を実行します。
+
+```powershell
+uv run --project back --extra cpu mini-llm-train --device cpu `
+  --resume artifacts/checkpoints/tiny/latest.pt --max-steps 40
+```
+
+`latest.pt` に加えて `step_000040.pt` のような定期チェックポイントを保存します。損失、Perplexity、勾配norm、累積トークン数は `artifacts/experiments/tiny/metrics.jsonl` へ追記されます。
+
 ## 文字列生成
 
 学習済みチェックポイントから、temperatureとtop-kを使って1トークンずつ生成します。
