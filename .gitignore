@@ -2,6 +2,7 @@
 .serena/
 AGENTS.md
 .venv/
+.venv-gpu/
 __pycache__/
 *.py[cod]
 .pytest_cache/

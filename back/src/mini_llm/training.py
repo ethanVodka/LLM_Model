@@ -246,7 +246,7 @@ def train_model(
 
         optimizer.zero_grad(set_to_none=True)
         loss = language_model_loss(model(inputs), targets)
-        loss.backward()
+        loss.backward()  # type: ignore[no-untyped-call]  # PyTorch 2.12型スタブの不足。
         grad_norm = nn.utils.clip_grad_norm_(model.parameters(), config.grad_clip_norm)
         optimizer.step()
 

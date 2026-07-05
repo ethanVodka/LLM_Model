@@ -12,7 +12,7 @@ dependencies = [
   "fastapi==0.139.0",
   "numpy==2.5.0",
   "PyYAML==6.0.3",
-  "tokenizers==0.23.1",
+  "tokenizers==0.22.1",
   "uvicorn==0.50.0",
 ]
 
@@ -22,6 +22,12 @@ cpu = [
 ]
 gpu = [
   "torch==2.12.1",
+]
+qlora = [
+  "accelerate==1.11.0",
+  "bitsandbytes==0.48.2",
+  "peft==0.17.1",
+  "transformers==4.57.1",
 ]
 
 [dependency-groups]
@@ -42,6 +48,7 @@ mini-llm-generate = "mini_llm.inference_cli:main"
 mini-llm-info = "mini_llm.cli:main"
 mini-llm-project-code = "mini_llm.project_code_cli:main"
 mini-llm-qa = "mini_llm.qa_cli:main"
+mini-llm-qwen-data = "mini_llm.qwen_data_cli:main"
 mini-llm-tokenizer = "mini_llm.tokenizer_cli:main"
 mini-llm-train = "mini_llm.training_cli:main"
 mini-llm-wikipedia = "mini_llm.wikipedia_cli:main"
@@ -60,6 +67,11 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
+
+[[tool.mypy.overrides]]
+# Transformers互換のtokenizers 0.22.1はpy.typedを配布していないため限定的に除外する。
+module = ["tokenizers", "tokenizers.*"]
+ignore_missing_imports = true
 
 [tool.uv]
 conflicts = [

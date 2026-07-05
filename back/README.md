@@ -70,6 +70,16 @@ uv run --project back --extra cpu uvicorn mini_llm.api:app --reload --port 8000
 
 起動時にチェックポイントとトークナイザーを1回だけ読み込みます。パスは `.env` の `CHECKPOINT_PATH` と `TOKENIZER_PATH` で変更できます。
 
+Qwen3-1.7B + LoRAバックエンドは、CUDAと4-bit依存を分離したGPU環境から起動します。
+
+```powershell
+$env:UV_PROJECT_ENVIRONMENT = "back/.venv-gpu"
+uv sync --project back --frozen --extra gpu --extra qlora
+back\.venv-gpu\Scripts\python.exe back/scripts/serve_qwen.py
+```
+
+Qwenサービスも同じ `/api/health` と `/api/generate` 契約を使用します。基盤モデルとadapterはGit管理外です。
+
 ## 評価
 
 ```powershell
