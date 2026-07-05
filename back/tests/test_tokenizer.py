@@ -3,10 +3,10 @@ from pathlib import Path
 
 import pytest
 
+from mini_llm.corpus import iter_jsonl_texts
 from mini_llm.tokenizer import (
     DEFAULT_SPECIAL_TOKENS,
     TokenizerConfig,
-    iter_jsonl_texts,
     load_tokenizer,
     train_tokenizer,
 )

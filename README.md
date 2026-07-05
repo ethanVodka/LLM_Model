@@ -61,6 +61,17 @@ uv run --project back --extra cpu mini-llm-tokenizer encode "こんにちは、P
 
 学習結果はGit管理外の `artifacts/tokenizer/tiny.json` に保存されます。サンプルコーパスはパイプライン検証専用であり、実用モデルの学習データではありません。
 
+## 学習データ準備
+
+コーパスを文書単位でtrainとvalidationへ分割し、次トークン予測用の固定長配列を作ります。
+
+```powershell
+uv run --project back --extra cpu mini-llm-data prepare
+uv run --project back --extra cpu mini-llm-data inspect
+```
+
+生成先はGit管理外の `artifacts/datasets/tiny/` です。分割の再現に必要なシード、文書ID、入力ファイルのSHA-256も `metadata.json` へ記録します。
+
 ## 現在の範囲
 
 `configs/model/tiny.yaml` は実装確認用であり、実用品質のモデルではありません。学習データと生成物はGit管理外です。データセットを追加するときは、出典、ライセンス、利用条件を必ず記録してください。

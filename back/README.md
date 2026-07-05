@@ -12,3 +12,12 @@ uv run --project back --extra cpu mini-llm-tokenizer encode "こんにちは"
 ```
 
 学習済みファイルは `artifacts/tokenizer/tiny.json` に生成され、Git管理対象外です。
+
+## 学習データ
+
+```powershell
+uv run --project back --extra cpu mini-llm-data prepare
+uv run --project back --extra cpu mini-llm-data inspect
+```
+
+`prepare` は文書単位で分割した `train.npy` と `validation.npy` を作成します。各行は入力64トークンと、1トークン先の正解を作れる65要素です。

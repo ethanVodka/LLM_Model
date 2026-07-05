@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-import json
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -18,7 +17,6 @@ from tokenizers.processors import TemplateProcessing
 from tokenizers.trainers import BpeTrainer
 
 DEFAULT_SPECIAL_TOKENS = ("<pad>", "<unk>", "<bos>", "<eos>")
-REQUIRED_CORPUS_FIELDS = ("id", "text", "source", "license", "language")
 
 
 @dataclass(frozen=True)
@@ -66,35 +64,6 @@ class TokenizerConfig:
             min_frequency=min_frequency,
             special_tokens=tuple(special_tokens),
         )
-
-
-def iter_jsonl_texts(paths: Sequence[str | Path]) -> Iterator[str]:
-    """JSONLコーパスを順番に読み、空でないtextだけを返す。"""
-
-    for path_value in paths:
-        path = Path(path_value)
-        with path.open(encoding="utf-8") as file:
-            for line_number, line in enumerate(file, start=1):
-                if not line.strip():
-                    continue
-                try:
-                    record: Any = json.loads(line)
-                except json.JSONDecodeError as error:
-                    raise ValueError(f"invalid JSON at {path}:{line_number}") from error
-                if not isinstance(record, dict):
-                    raise ValueError(f"record must be a mapping at {path}:{line_number}")
-                invalid_fields = [
-                    field
-                    for field in REQUIRED_CORPUS_FIELDS
-                    if not isinstance(record.get(field), str) or not record[field].strip()
-                ]
-                if invalid_fields:
-                    fields = ", ".join(invalid_fields)
-                    raise ValueError(
-                        f"fields must be non-empty strings at {path}:{line_number}: {fields}"
-                    )
-                text = record["text"]
-                yield text
 
 
 def create_tokenizer(config: TokenizerConfig) -> Tokenizer:

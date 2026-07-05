@@ -1,0 +1,4 @@
+# 256トークン対応モデルを、小さなサンプルコーパスで検証する設定
+context_length: 64
+validation_fraction: 0.2
+seed: 42

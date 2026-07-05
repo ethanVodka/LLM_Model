@@ -8,9 +8,9 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from mini_llm.config import ModelConfig
+from mini_llm.corpus import iter_jsonl_texts
 from mini_llm.tokenizer import (
     TokenizerConfig,
-    iter_jsonl_texts,
     load_tokenizer,
     train_tokenizer,
 )
