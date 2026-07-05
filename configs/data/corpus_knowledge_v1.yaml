@@ -12,6 +12,10 @@ sources:
     source: jawikipedia
     license: CC-BY-SA-4.0
     acquired_at: "2026-07-05"
+  - path: data/raw/project_code_v1.jsonl
+    source: project-source-code
+    license: project-original
+    acquired_at: "2026-07-05"
 allowed_licenses:
   - project-original
   - CC-BY-SA-4.0

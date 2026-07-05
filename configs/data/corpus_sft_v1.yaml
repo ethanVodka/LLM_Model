@@ -1,0 +1,17 @@
+# 会話形式のデータは知識事前学習用コーパスと分離して管理する
+sources:
+  - path: data/samples/conversation_corpus.jsonl
+    source: project-original
+    license: project-original
+    acquired_at: "2026-07-05"
+  - path: data/processed/wikipedia_qa_v1.jsonl
+    source: jawikipedia-derived-qa
+    license: CC-BY-SA-4.0
+    acquired_at: "2026-07-05"
+allowed_licenses:
+  - project-original
+  - CC-BY-SA-4.0
+min_characters: 10
+max_characters: 20000
+normalize_nfkc: true
+deduplicate: true

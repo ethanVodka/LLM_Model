@@ -139,19 +139,25 @@ uv run --project back --extra cpu mini-llm-data prepare `
 
 v1トークナイザーは `<system>`、`<user>`、`<assistant>` を単一トークンとして扱います。現在の38文書はパイプライン検証用であり、会話品質を得るデータ量ではありません。
 
-## 日本語Wikipedia知識データ
+## 日本語知識・コード・会話データ
 
-`configs/data/wikipedia_ja_v1.yaml` で固定した100記事の冒頭抜粋を、Wikimedia APIへ負荷をかけない逐次リクエストで取得します。
+`configs/data/wikipedia_ja_v1.yaml` で固定した100記事から最大1,200文字ずつ、Wikimedia APIへ負荷をかけない逐次リクエストで取得します。続けて本リポジトリのPython／TypeScriptと、Wikipedia由来のrole付きQAを準備します。
 
 ```powershell
 uv run --project back --extra cpu mini-llm-wikipedia
+uv run --project back --extra cpu mini-llm-project-code
+uv run --project back --extra cpu mini-llm-qa
 uv run --project back --extra cpu mini-llm-corpus `
   --config configs/data/corpus_knowledge_v1.yaml `
   --output data/processed/knowledge_v1/corpus.jsonl `
   --report artifacts/data/knowledge_v1/report.json
+uv run --project back --extra cpu mini-llm-corpus `
+  --config configs/data/corpus_sft_v1.yaml `
+  --output data/processed/sft_v1/corpus.jsonl `
+  --report artifacts/data/sft_v1/report.json
 ```
 
-各JSONLレコードに固定revision IDと恒久URLを保存し、CC BY-SA 4.0の帰属先を追跡します。取得データと生成コーパスはGit管理外です。再配布や公開学習に使う場合は、帰属と継承条件を別途確認してください。
+各Wikipediaレコードに固定revision IDと恒久URLを保存し、CC BY-SA 4.0の帰属先を追跡します。QAは自動生成データであり、SFT投入前の品質レビューが必要です。取得データと生成コーパスはGit管理外です。再配布や公開学習に使う場合は、帰属と継承条件を別途確認してください。
 
 ## 現在の範囲
 

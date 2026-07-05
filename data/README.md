@@ -13,3 +13,7 @@
 `samples/conversation_corpus.jsonl` はrole tokenと会話形式を検証するプロジェクト独自サンプルです。外部データを追加するときは `configs/data/corpus_v1.yaml` にパス、出典、ライセンス、取得日を追加します。
 
 `raw/wikipedia_ja_v1.jsonl` は `mini-llm-wikipedia` で取得するGit管理外データです。各記事のrevision IDとCC BY-SA 4.0帰属URLを削除しないでください。
+
+`raw/project_code_v1.jsonl` は `mini-llm-project-code` で本リポジトリのPython／TypeScriptを変換したデータです。対象globとリポジトリURLは `configs/data/project_code_v1.yaml` で固定します。
+
+`processed/wikipedia_qa_v1.jsonl` は `mini-llm-qa` がWikipedia本文から自動生成するrole付きQAです。自動生成済みであることは品質保証を意味しないため、SFTへ使う前に事実性、質問との対応、回答長を人手または別の評価工程で確認してください。知識事前学習用の `corpus_knowledge_v1.yaml` と会話学習用の `corpus_sft_v1.yaml` は分離します。

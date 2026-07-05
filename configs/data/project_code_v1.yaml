@@ -1,0 +1,10 @@
+# 自分たちが作成したPython・TypeScript実装を学習用に変換する
+root: .
+repository_url: https://github.com/ethanVodka/LLM_Model
+revision: main
+license: project-original
+include:
+  - back/src/**/*.py
+  - front/src/**/*.ts
+  - front/src/**/*.tsx
+max_file_characters: 50000

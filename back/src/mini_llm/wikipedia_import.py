@@ -27,6 +27,8 @@ class WikipediaImportConfig:
     language: str
     batch_size: int
     extract_characters: int
+    intro_only: bool
+    request_delay_seconds: float
     titles: tuple[str, ...]
 
     def __post_init__(self) -> None:
@@ -40,6 +42,10 @@ class WikipediaImportConfig:
             raise ValueError("batch_size must be between 1 and 20")
         if not 1 <= self.extract_characters <= 1200:
             raise ValueError("extract_characters must be between 1 and 1200")
+        if not self.intro_only and self.batch_size != 1:
+            raise ValueError("full extracts require batch_size 1")
+        if not 0.0 <= self.request_delay_seconds <= 10.0:
+            raise ValueError("request_delay_seconds must be between 0 and 10")
         if not self.titles or len(set(self.titles)) != len(self.titles):
             raise ValueError("titles must be non-empty and unique")
 
@@ -61,6 +67,14 @@ class WikipediaImportConfig:
             isinstance(title, str) and title for title in titles
         ):
             raise ValueError("titles must be a list of non-empty strings")
+        intro_only = raw.get("intro_only")
+        request_delay_seconds = raw.get("request_delay_seconds")
+        if not isinstance(intro_only, bool):
+            raise ValueError("intro_only must be a boolean")
+        if not isinstance(request_delay_seconds, int | float) or isinstance(
+            request_delay_seconds, bool
+        ):
+            raise ValueError("request_delay_seconds must be a number")
         return cls(
             endpoint=values["endpoint"],
             user_agent=values["user_agent"],
@@ -68,6 +82,8 @@ class WikipediaImportConfig:
             language=values["language"],
             batch_size=_require_integer(raw, "batch_size"),
             extract_characters=_require_integer(raw, "extract_characters"),
+            intro_only=intro_only,
+            request_delay_seconds=float(request_delay_seconds),
             titles=tuple(titles),
         )
 
@@ -84,7 +100,8 @@ def import_wikipedia(
     requester = request_json or _request_json
     records: list[dict[str, str]] = []
     missing_titles: list[str] = []
-    for titles in _batched(config.titles, config.batch_size):
+    batches = _batched(config.titles, config.batch_size)
+    for batch_index, titles in enumerate(batches):
         response = requester(_build_url(config, titles), config.user_agent)
         pages = _extract_pages(response)
         returned_titles = set()
@@ -102,6 +119,8 @@ def import_wikipedia(
         )
         if not returned_titles and not missing_titles:
             raise ValueError("Wikipedia API returned no usable pages")
+        if request_json is None and batch_index < len(batches) - 1:
+            time.sleep(config.request_delay_seconds)
 
     if not records:
         raise ValueError("Wikipedia import produced no records")
@@ -133,20 +152,20 @@ def import_wikipedia(
 
 
 def _build_url(config: WikipediaImportConfig, titles: Sequence[str]) -> str:
-    query = urlencode(
-        {
-            "action": "query",
-            "format": "json",
-            "formatversion": "2",
-            "prop": "extracts|revisions",
-            "exintro": "1",
-            "explaintext": "1",
-            "exchars": str(config.extract_characters),
-            "rvprop": "ids|timestamp",
-            "redirects": "1",
-            "titles": "|".join(titles),
-        }
-    )
+    parameters = {
+        "action": "query",
+        "format": "json",
+        "formatversion": "2",
+        "prop": "extracts|revisions",
+        "explaintext": "1",
+        "exchars": str(config.extract_characters),
+        "rvprop": "ids|timestamp",
+        "redirects": "1",
+        "titles": "|".join(titles),
+    }
+    if config.intro_only:
+        parameters["exintro"] = "1"
+    query = urlencode(parameters)
     return f"{config.endpoint}?{query}"
 
 

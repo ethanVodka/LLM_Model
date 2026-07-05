@@ -3,8 +3,10 @@ endpoint: https://ja.wikipedia.org/w/api.php
 user_agent: LearningMiniLLM/0.1 (https://github.com/ethanVodka/LLM_Model)
 license: CC-BY-SA-4.0
 language: ja
-batch_size: 20
+batch_size: 1
 extract_characters: 1200
+intro_only: false
+request_delay_seconds: 0.2
 titles:
   - 人工知能
   - 機械学習
