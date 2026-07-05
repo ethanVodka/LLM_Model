@@ -1,0 +1,16 @@
+# 学習データv1の出典・利用条件と品質フィルタ
+sources:
+  - path: data/samples/tokenizer_corpus.jsonl
+    source: project-original
+    license: project-original
+    acquired_at: "2026-07-05"
+  - path: data/samples/conversation_corpus.jsonl
+    source: project-original
+    license: project-original
+    acquired_at: "2026-07-05"
+allowed_licenses:
+  - project-original
+min_characters: 10
+max_characters: 20000
+normalize_nfkc: true
+deduplicate: true

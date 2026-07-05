@@ -1,0 +1,11 @@
+# 会話roleを分割せず扱うv1 Byte-level BPE設定
+vocab_size: 1024
+min_frequency: 1
+special_tokens:
+  - <pad>
+  - <unk>
+  - <bos>
+  - <eos>
+  - <system>
+  - <user>
+  - <assistant>

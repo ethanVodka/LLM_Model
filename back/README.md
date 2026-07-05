@@ -66,3 +66,11 @@ uv run --project back --extra cpu mini-llm-evaluate --device cpu
 ```
 
 validation lossとPerplexityを計算し、`data/samples/evaluation_prompts.jsonl` の固定プロンプトをgreedy生成します。指標、生成結果、入力成果物のハッシュは `artifacts/evaluations/tiny/report.json` へ保存されます。
+
+## v1データ準備
+
+```powershell
+uv run --project back --extra cpu mini-llm-corpus
+```
+
+`configs/data/corpus_v1.yaml` のmanifestと入力JSONLの出典・ライセンスが一致することを確認し、NFKC正規化、改行統一、完全一致重複除去、文字数フィルタ、主要な秘密情報パターン検査を行います。出力は `data/processed/v1/corpus.jsonl`、監査レポートは `artifacts/data/v1/report.json` です。

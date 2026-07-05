@@ -1,0 +1,8 @@
+# 会話形式と長い文脈を試すv1小型モデル
+vocab_size: 1024
+context_length: 512
+d_model: 256
+n_heads: 4
+n_layers: 4
+d_ff: 1024
+dropout: 0.1

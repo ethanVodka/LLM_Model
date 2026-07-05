@@ -1,0 +1,4 @@
+# v1モデルの事前学習データ設定
+context_length: 128
+validation_fraction: 0.15
+seed: 42

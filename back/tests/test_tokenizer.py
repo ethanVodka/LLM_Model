@@ -114,3 +114,25 @@ def test_training_is_deterministic(tmp_path: Path) -> None:
     second = train_tokenizer(config, texts, tmp_path / "second.json")
 
     assert first.to_str() == second.to_str()
+
+
+def test_preserves_conversation_role_tokens(tmp_path: Path) -> None:
+    role_tokens = ("<system>", "<user>", "<assistant>")
+    config = TokenizerConfig(
+        vocab_size=280,
+        min_frequency=1,
+        special_tokens=(*DEFAULT_SPECIAL_TOKENS, *role_tokens),
+    )
+    tokenizer = train_tokenizer(
+        config,
+        [
+            "<system>簡潔に回答します。<user>こんにちは<assistant>こんにちは。",
+            "<user>Pythonの関数は？<assistant>def hello() -> str:",
+        ],
+        tmp_path / "tokenizer.json",
+    )
+
+    assert [tokenizer.token_to_id(token) for token in role_tokens] == [4, 5, 6]
+    encoding = tokenizer.encode("<user>test<assistant>", add_special_tokens=False)
+    assert 5 in encoding.ids
+    assert 6 in encoding.ids

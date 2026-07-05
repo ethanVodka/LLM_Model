@@ -122,6 +122,23 @@ uv run --project back --extra cpu mini-llm-evaluate --device cpu
 
 レポートはGit管理外の `artifacts/evaluations/tiny/report.json` へ保存されます。チェックポイント、トークナイザー、validationデータ、プロンプト集のSHA-256も記録するため、異なる実験を同一条件で比較できます。
 
+## v1コーパスと会話トークナイザー
+
+出典、ライセンス、取得日を `configs/data/corpus_v1.yaml` で検証し、正規化、重複除去、秘密情報パターン検査を実行します。
+
+```powershell
+uv run --project back --extra cpu mini-llm-corpus
+uv run --project back --extra cpu mini-llm-tokenizer train `
+  --config configs/tokenizer/v1.yaml --model-config configs/model/v1.yaml `
+  --corpus data/processed/v1/corpus.jsonl --output artifacts/tokenizer/v1.json
+uv run --project back --extra cpu mini-llm-data prepare `
+  --config configs/data/v1.yaml --model-config configs/model/v1.yaml `
+  --tokenizer artifacts/tokenizer/v1.json --corpus data/processed/v1/corpus.jsonl `
+  --output-dir artifacts/datasets/v1
+```
+
+v1トークナイザーは `<system>`、`<user>`、`<assistant>` を単一トークンとして扱います。現在の38文書はパイプライン検証用であり、会話品質を得るデータ量ではありません。
+
 ## 現在の範囲
 
 `configs/model/tiny.yaml` は実装確認用であり、実用品質のモデルではありません。学習データと生成物はGit管理外です。データセットを追加するときは、出典、ライセンス、利用条件を必ず記録してください。

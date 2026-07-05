@@ -33,8 +33,10 @@ class TokenizerConfig:
             raise ValueError(f"vocab_size must be at least {minimum_vocab_size}")
         if self.min_frequency <= 0:
             raise ValueError("min_frequency must be positive")
-        if self.special_tokens != DEFAULT_SPECIAL_TOKENS:
-            raise ValueError(f"special_tokens must be ordered as {DEFAULT_SPECIAL_TOKENS}")
+        if self.special_tokens[: len(DEFAULT_SPECIAL_TOKENS)] != DEFAULT_SPECIAL_TOKENS:
+            raise ValueError(f"special_tokens must start with {DEFAULT_SPECIAL_TOKENS}")
+        if any(not token for token in self.special_tokens):
+            raise ValueError("special_tokens must not contain empty strings")
         if len(set(self.special_tokens)) != len(self.special_tokens):
             raise ValueError("special_tokens must be unique")
 
@@ -69,7 +71,7 @@ class TokenizerConfig:
 def create_tokenizer(config: TokenizerConfig) -> Tokenizer:
     """未学習のByte-level BPEパイプラインを構築する。"""
 
-    pad_token, unk_token, bos_token, eos_token = config.special_tokens
+    pad_token, unk_token, bos_token, eos_token = config.special_tokens[:4]
     tokenizer = Tokenizer(BPE(unk_token=unk_token))
 
     # NFKCで全角英数字などの互換文字を統一する。大文字小文字はコード上で意味を持つため保持する。
