@@ -72,6 +72,16 @@ uv run --project back --extra cpu mini-llm-data inspect
 
 生成先はGit管理外の `artifacts/datasets/tiny/` です。分割の再現に必要なシード、文書ID、入力ファイルのSHA-256も `metadata.json` へ記録します。
 
+## 事前学習スモークテスト
+
+データ準備後、CPU用の短い設定で次トークン予測を学習します。
+
+```powershell
+uv run --project back --extra cpu mini-llm-train --device cpu
+```
+
+学習中はtrain・validation lossと勾配normを表示し、最終状態をGit管理外の `artifacts/checkpoints/tiny/latest.pt` へ保存します。この20 step設定は学習処理の検証用であり、生成品質を得るための学習量ではありません。
+
 ## 現在の範囲
 
 `configs/model/tiny.yaml` は実装確認用であり、実用品質のモデルではありません。学習データと生成物はGit管理外です。データセットを追加するときは、出典、ライセンス、利用条件を必ず記録してください。

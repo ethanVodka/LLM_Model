@@ -1,0 +1,8 @@
+# CPUで学習ループの動作を確認する短時間設定
+batch_size: 4
+max_steps: 20
+learning_rate: 0.0003
+weight_decay: 0.1
+grad_clip_norm: 1.0
+eval_interval: 5
+seed: 42

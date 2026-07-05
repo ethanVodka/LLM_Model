@@ -21,3 +21,11 @@ uv run --project back --extra cpu mini-llm-data inspect
 ```
 
 `prepare` は文書単位で分割した `train.npy` と `validation.npy` を作成します。各行は入力64トークンと、1トークン先の正解を作れる65要素です。
+
+## 事前学習
+
+```powershell
+uv run --project back --extra cpu mini-llm-train --device cpu
+```
+
+`configs/training/tiny.yaml` に従い、AdamW、Cross Entropy、勾配クリッピングを使っ20 stepだけ学習します。チェックポイントにはモデル、Optimizer、設定、最終指標を保存します。

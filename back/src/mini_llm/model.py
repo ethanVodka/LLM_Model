@@ -49,9 +49,20 @@ class MiniDecoderLM(nn.Module):
         self.final_norm = nn.LayerNorm(config.d_model)
         self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
 
+        # EmbeddingのPyTorch既定初期化はWeight Tying時のlogitsを過大にするため、
+        # GPT系の小型モデルで一般的な小さい標準偏差で全重みを初期化する。
+        self.apply(self._initialize_weights)
+
         # 入力Embeddingと出力層の重みを共有するWeight Tying。
         # 語彙×隠れ次元の大きな行列を1つ減らし、入出力のトークン表現も対応させる。
         self.lm_head.weight = self.token_embedding.weight
+
+    @staticmethod
+    def _initialize_weights(module: nn.Module) -> None:
+        if isinstance(module, nn.Linear | nn.Embedding):
+            nn.init.normal_(module.weight, mean=0.0, std=0.02)
+        if isinstance(module, nn.Linear) and module.bias is not None:
+            nn.init.zeros_(module.bias)
 
     def forward(self, input_ids: Tensor) -> Tensor:
         """トークンID列から、各位置の次トークン予測logitsを計算する。
