@@ -35,6 +35,7 @@ dev = [
 
 [project.scripts]
 mini-llm-data = "mini_llm.data_cli:main"
+mini-llm-evaluate = "mini_llm.evaluation_cli:main"
 mini-llm-generate = "mini_llm.inference_cli:main"
 mini-llm-info = "mini_llm.cli:main"
 mini-llm-tokenizer = "mini_llm.tokenizer_cli:main"

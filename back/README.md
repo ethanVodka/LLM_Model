@@ -49,3 +49,11 @@ uv run --project back --extra cpu uvicorn mini_llm.api:app --reload --port 8000
 - `POST /api/generate` — プロンプトと生成設定から文字列を生成
 
 起動時にチェックポイントとトークナイザーを1回だけ読み込みます。パスは `.env` の `CHECKPOINT_PATH` と `TOKENIZER_PATH` で変更できます。
+
+## 評価
+
+```powershell
+uv run --project back --extra cpu mini-llm-evaluate --device cpu
+```
+
+validation lossとPerplexityを計算し、`data/samples/evaluation_prompts.jsonl` の固定プロンプトをgreedy生成します。指標、生成結果、入力成果物のハッシュは `artifacts/evaluations/tiny/report.json` へ保存されます。

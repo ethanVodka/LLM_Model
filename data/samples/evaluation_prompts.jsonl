@@ -1,0 +1,6 @@
+{"id":"ja-greeting","prompt":"こんにちは、今日は","category":"conversation","language":"ja"}
+{"id":"ja-explanation","prompt":"言語モデルとは","category":"explanation","language":"ja"}
+{"id":"py-function","prompt":"def add(a: int, b: int) -> int:\n    ","category":"code-completion","language":"python"}
+{"id":"py-class","prompt":"class Counter:\n    def __init__(self) -> None:\n        ","category":"code-completion","language":"python"}
+{"id":"ts-function","prompt":"export function greet(name: string): string {\n  ","category":"code-completion","language":"typescript"}
+{"id":"ts-type","prompt":"type TrainingStatus = ","category":"code-completion","language":"typescript"}
