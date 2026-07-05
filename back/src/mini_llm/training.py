@@ -133,6 +133,8 @@ def language_model_loss(logits: Tensor, targets: Tensor) -> Tensor:
         raise ValueError("logits must have shape [batch, sequence, vocab_size]")
     if targets.shape != logits.shape[:2]:
         raise ValueError("targets must match logits batch and sequence dimensions")
+    if not torch.any(targets != -100):
+        raise ValueError("targets must contain at least one trainable token")
     return F.cross_entropy(logits.flatten(0, 1), targets.flatten())
 
 
@@ -152,7 +154,7 @@ def evaluate(
         inputs = inputs.to(device)
         targets = targets.to(device)
         loss = language_model_loss(model(inputs), targets)
-        batch_token_count = targets.numel()
+        batch_token_count = int(torch.count_nonzero(targets != -100).item())
         loss_sum += loss.item() * batch_token_count
         token_count += batch_token_count
 

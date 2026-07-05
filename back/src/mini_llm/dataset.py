@@ -19,6 +19,8 @@ from torch.utils.data import Dataset
 
 from mini_llm.corpus import CorpusRecord
 
+IGNORE_INDEX = -100
+
 
 @dataclass(frozen=True)
 class DataConfig:
@@ -158,6 +160,108 @@ def prepare_dataset(
     return metadata
 
 
+def prepare_sft_dataset(
+    config: DataConfig,
+    records: Sequence[CorpusRecord],
+    tokenizer: Tokenizer,
+    output_dir: str | Path,
+    *,
+    tokenizer_path: str | Path,
+    corpus_paths: Sequence[str | Path],
+) -> dict[str, object]:
+    """会話文書を固定長化し、assistant回答部分だけを学習対象として保存する。"""
+
+    train_records, validation_records = split_records(
+        records,
+        validation_fraction=config.validation_fraction,
+        seed=config.seed,
+    )
+    train_inputs, train_targets = _build_sft_arrays(
+        train_records,
+        tokenizer,
+        config.context_length,
+    )
+    validation_inputs, validation_targets = _build_sft_arrays(
+        validation_records,
+        tokenizer,
+        config.context_length,
+    )
+
+    destination = Path(output_dir)
+    destination.mkdir(parents=True, exist_ok=True)
+    np.save(destination / "train_inputs.npy", train_inputs, allow_pickle=False)
+    np.save(destination / "train_targets.npy", train_targets, allow_pickle=False)
+    np.save(destination / "validation_inputs.npy", validation_inputs, allow_pickle=False)
+    np.save(destination / "validation_targets.npy", validation_targets, allow_pickle=False)
+
+    metadata: dict[str, object] = {
+        "schema_version": 2,
+        "objective": "assistant-response",
+        "context_length": config.context_length,
+        "validation_fraction": config.validation_fraction,
+        "seed": config.seed,
+        "vocab_size": tokenizer.get_vocab_size(),
+        "input_dtype": "int64",
+        "target_dtype": "int64",
+        "ignore_index": IGNORE_INDEX,
+        "tokenizer_sha256": _sha256_file(Path(tokenizer_path)),
+        "corpus_sha256": _sha256_files(corpus_paths),
+        "train_record_ids": [record.id for record in train_records],
+        "validation_record_ids": [record.id for record in validation_records],
+        "train_sequence_count": len(train_inputs),
+        "validation_sequence_count": len(validation_inputs),
+        "train_target_token_count": int(np.count_nonzero(train_targets != IGNORE_INDEX)),
+        "validation_target_token_count": int(
+            np.count_nonzero(validation_targets != IGNORE_INDEX)
+        ),
+    }
+    (destination / "metadata.json").write_text(
+        json.dumps(metadata, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return metadata
+
+
+def _build_sft_arrays(
+    records: Sequence[CorpusRecord],
+    tokenizer: Tokenizer,
+    context_length: int,
+) -> tuple[NDArray[np.int64], NDArray[np.int64]]:
+    assistant_token_id = tokenizer.token_to_id("<assistant>")
+    pad_token_id = tokenizer.token_to_id("<pad>")
+    if assistant_token_id is None or pad_token_id is None:
+        raise ValueError("SFT tokenizer must define <pad> and <assistant>")
+
+    inputs: list[list[int]] = []
+    targets: list[list[int]] = []
+    for record in records:
+        token_ids = tokenizer.encode(record.text, add_special_tokens=True).ids
+        assistant_positions = [
+            index for index, token_id in enumerate(token_ids) if token_id == assistant_token_id
+        ]
+        if len(assistant_positions) != 1:
+            raise ValueError(f"SFT record must contain exactly one <assistant>: {record.id}")
+        assistant_index = assistant_positions[0]
+        sequence = token_ids[: context_length + 1]
+        if assistant_index >= len(sequence) - 1:
+            raise ValueError(f"SFT answer does not fit in context_length: {record.id}")
+
+        input_ids = sequence[:-1]
+        target_ids = sequence[1:]
+        masked_targets = [
+            token_id if index >= assistant_index else IGNORE_INDEX
+            for index, token_id in enumerate(target_ids)
+        ]
+        padding_length = context_length - len(input_ids)
+        inputs.append(input_ids + [pad_token_id] * padding_length)
+        targets.append(masked_targets + [IGNORE_INDEX] * padding_length)
+
+    return (
+        np.asarray(inputs, dtype=np.int64),
+        np.asarray(targets, dtype=np.int64),
+    )
+
+
 class NextTokenDataset(Dataset[tuple[Tensor, Tensor]]):
     """保存済み系列から入力と1トークン先の正解を返すPyTorch Dataset。"""
 
@@ -175,6 +279,26 @@ class NextTokenDataset(Dataset[tuple[Tensor, Tensor]]):
         row = np.array(self.sequences[index], dtype=np.int64, copy=True)
         tokens = from_numpy(row)
         return tokens[:-1], tokens[1:]
+
+
+class MaskedNextTokenDataset(Dataset[tuple[Tensor, Tensor]]):
+    """入力配列と、非回答部分を無視する正解配列を読み込むDataset。"""
+
+    def __init__(self, inputs_path: str | Path, targets_path: str | Path) -> None:
+        inputs = np.load(Path(inputs_path), mmap_mode="r", allow_pickle=False)
+        targets = np.load(Path(targets_path), mmap_mode="r", allow_pickle=False)
+        if inputs.ndim != 2 or inputs.shape != targets.shape or inputs.shape[1] < 1:
+            raise ValueError("masked dataset inputs and targets must have the same 2D shape")
+        self.inputs: NDArray[np.int64] = inputs
+        self.targets: NDArray[np.int64] = targets
+
+    def __len__(self) -> int:
+        return len(self.inputs)
+
+    def __getitem__(self, index: int) -> tuple[Tensor, Tensor]:
+        inputs = np.array(self.inputs[index], dtype=np.int64, copy=True)
+        targets = np.array(self.targets[index], dtype=np.int64, copy=True)
+        return from_numpy(inputs), from_numpy(targets)
 
 
 def _sha256_file(path: Path) -> str:

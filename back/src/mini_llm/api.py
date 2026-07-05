@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 from tokenizers import Tokenizer
 
+from mini_llm.conversation import format_chat_prompt
 from mini_llm.inference import GenerationConfig, generate_token_ids, load_checkpoint
 from mini_llm.model import MiniDecoderLM
 from mini_llm.tokenizer import load_tokenizer
@@ -65,10 +66,10 @@ class ApiSettings:
         origins = os.getenv("API_CORS_ORIGINS", "http://localhost:5173")
         return cls(
             checkpoint_path=Path(
-                os.getenv("CHECKPOINT_PATH", "artifacts/checkpoints/tiny/latest.pt")
+                os.getenv("CHECKPOINT_PATH", "artifacts/checkpoints/chat_demo/latest.pt")
             ),
             tokenizer_path=Path(
-                os.getenv("TOKENIZER_PATH", "artifacts/tokenizer/tiny.json")
+                os.getenv("TOKENIZER_PATH", "artifacts/tokenizer/chat_demo.json")
             ),
             device=os.getenv("DEVICE", "auto"),
             cors_origins=tuple(origin.strip() for origin in origins.split(",") if origin.strip()),
@@ -107,9 +108,10 @@ class GenerationService:
         if bos_token_id is None or eos_token_id is None:
             raise ValueError("tokenizer must define <bos> and <eos> tokens")
 
+        chat_prompt = format_chat_prompt(request.prompt)
         prompt_ids = [
             bos_token_id,
-            *self.tokenizer.encode(request.prompt, add_special_tokens=False).ids,
+            *self.tokenizer.encode(chat_prompt, add_special_tokens=False).ids,
         ]
         with self.lock:
             generated_ids = generate_token_ids(
@@ -124,8 +126,12 @@ class GenerationService:
                 eos_token_id=eos_token_id,
                 device=self.device,
             )
+        completion_ids = generated_ids[len(prompt_ids) :]
         return GenerateResponse(
-            generated_text=self.tokenizer.decode(generated_ids, skip_special_tokens=True),
+            generated_text=self.tokenizer.decode(
+                completion_ids,
+                skip_special_tokens=True,
+            ).strip(),
             generated_token_count=len(generated_ids) - len(prompt_ids),
             checkpoint_step=self.checkpoint_step,
         )

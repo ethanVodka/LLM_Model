@@ -8,6 +8,7 @@ from pathlib import Path
 
 import torch
 
+from mini_llm.conversation import format_chat_prompt
 from mini_llm.inference import GenerationConfig, generate_token_ids, load_checkpoint
 from mini_llm.tokenizer import load_tokenizer
 
@@ -30,6 +31,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--top-k", type=int, default=50)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    parser.add_argument(
+        "--chat",
+        action="store_true",
+        help="format the prompt as a user message and print only the assistant response",
+    )
     return parser
 
 
@@ -46,9 +52,10 @@ def main() -> None:
     if bos_token_id is None or eos_token_id is None:
         raise ValueError("tokenizer must define <bos> and <eos> tokens")
 
+    prompt = format_chat_prompt(args.prompt) if args.chat else args.prompt
     prompt_ids = [
         bos_token_id,
-        *tokenizer.encode(args.prompt, add_special_tokens=False).ids,
+        *tokenizer.encode(prompt, add_special_tokens=False).ids,
     ]
     generated_ids = generate_token_ids(
         loaded.model,
@@ -65,7 +72,8 @@ def main() -> None:
 
     print(f"device={device.type}")
     print(f"checkpoint_step={loaded.step}")
-    decoded = tokenizer.decode(generated_ids, skip_special_tokens=True)
+    output_ids = generated_ids[len(prompt_ids) :] if args.chat else generated_ids
+    decoded = tokenizer.decode(output_ids, skip_special_tokens=True).strip()
     print(f"text={_console_safe(decoded)}")
 
 

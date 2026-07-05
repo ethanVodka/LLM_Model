@@ -14,11 +14,11 @@ export function OverviewPage() {
           </div>
           <div>
             <dt>Parameters</dt>
-            <dd>3,487,232</dd>
+            <dd>478,720</dd>
           </div>
           <div>
             <dt>Phase</dt>
-            <dd>Foundation</dd>
+            <dd>Conversation SFT demo</dd>
           </div>
         </dl>
         <div className="pipeline-card">
@@ -28,6 +28,7 @@ export function OverviewPage() {
             <li>次トークン予測データ準備</li>
             <li>Decoder-only Transformer学習</li>
             <li>API経由の自己回帰生成</li>
+            <li>assistant回答だけを対象にしたSFT</li>
           </ol>
         </div>
       </div>

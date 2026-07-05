@@ -1,0 +1,8 @@
+# CPUで簡単な会話へ過学習させる約50万パラメータのデモ構成
+vocab_size: 512
+context_length: 128
+d_model: 128
+n_heads: 4
+n_layers: 2
+d_ff: 512
+dropout: 0.0

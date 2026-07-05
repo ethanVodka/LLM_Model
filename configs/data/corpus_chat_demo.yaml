@@ -1,0 +1,12 @@
+# 簡単な会話能力を確認する、人手作成の小規模SFTコーパス
+sources:
+  - path: data/samples/chat_demo_corpus.jsonl
+    source: project-original
+    license: project-original
+    acquired_at: "2026-07-05"
+allowed_licenses:
+  - project-original
+min_characters: 20
+max_characters: 1000
+normalize_nfkc: true
+deduplicate: true

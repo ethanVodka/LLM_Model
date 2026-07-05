@@ -6,10 +6,13 @@ import pytest
 
 from mini_llm.corpus import CorpusRecord, iter_jsonl_records
 from mini_llm.dataset import (
+    IGNORE_INDEX,
     DataConfig,
+    MaskedNextTokenDataset,
     NextTokenDataset,
     build_sequences,
     prepare_dataset,
+    prepare_sft_dataset,
     split_records,
 )
 from mini_llm.tokenizer import TokenizerConfig, train_tokenizer
@@ -119,3 +122,109 @@ def test_empty_token_stream_has_no_sequences() -> None:
 
     assert sequences.shape == (0, 9)
     assert sequences.dtype == np.uint16
+
+
+def test_prepares_sft_dataset_masking_prompt_tokens(tmp_path: Path) -> None:
+    records = [
+        CorpusRecord(
+            id=f"chat-{index}",
+            text=(
+                "<system>簡潔に回答します。"
+                f"<user>質問{index}<assistant>回答{index}です。"
+            ),
+            source="project-original",
+            license="project-original",
+            language="ja",
+        )
+        for index in range(4)
+    ]
+    tokenizer_path = tmp_path / "tokenizer.json"
+    tokenizer = train_tokenizer(
+        TokenizerConfig(
+            vocab_size=290,
+            min_frequency=1,
+            special_tokens=(
+                "<pad>",
+                "<unk>",
+                "<bos>",
+                "<eos>",
+                "<system>",
+                "<user>",
+                "<assistant>",
+            ),
+        ),
+        [record.text for record in records],
+        tokenizer_path,
+    )
+    corpus_path = tmp_path / "corpus.jsonl"
+    corpus_path.write_text("corpus hash input", encoding="utf-8")
+    output_dir = tmp_path / "sft"
+
+    metadata = prepare_sft_dataset(
+        DataConfig(context_length=48, validation_fraction=0.25, seed=42),
+        records,
+        tokenizer,
+        output_dir,
+        tokenizer_path=tokenizer_path,
+        corpus_paths=[corpus_path],
+    )
+    dataset = MaskedNextTokenDataset(
+        output_dir / "train_inputs.npy",
+        output_dir / "train_targets.npy",
+    )
+    inputs, targets = dataset[0]
+    assistant_token_id = tokenizer.token_to_id("<assistant>")
+    assert assistant_token_id is not None
+    assistant_index = inputs.tolist().index(assistant_token_id)
+
+    assert metadata["objective"] == "assistant-response"
+    assert targets[:assistant_index].tolist() == [IGNORE_INDEX] * assistant_index
+    assert targets[assistant_index].item() != IGNORE_INDEX
+    assert targets[-1].item() == IGNORE_INDEX
+
+
+def test_rejects_sft_record_without_assistant_role(tmp_path: Path) -> None:
+    records = [
+        CorpusRecord(
+            id="invalid-chat",
+            text="<user>質問だけです。",
+            source="project-original",
+            license="project-original",
+            language="ja",
+        ),
+        CorpusRecord(
+            id="valid-chat",
+            text="<user>質問<assistant>回答",
+            source="project-original",
+            license="project-original",
+            language="ja",
+        ),
+    ]
+    tokenizer_path = tmp_path / "tokenizer.json"
+    tokenizer = train_tokenizer(
+        TokenizerConfig(
+            vocab_size=290,
+            min_frequency=1,
+            special_tokens=(
+                "<pad>",
+                "<unk>",
+                "<bos>",
+                "<eos>",
+                "<system>",
+                "<user>",
+                "<assistant>",
+            ),
+        ),
+        [record.text for record in records],
+        tokenizer_path,
+    )
+
+    with pytest.raises(ValueError, match="exactly one"):
+        prepare_sft_dataset(
+            DataConfig(context_length=32, validation_fraction=0.5, seed=1),
+            records,
+            tokenizer,
+            tmp_path / "sft",
+            tokenizer_path=tokenizer_path,
+            corpus_paths=[tokenizer_path],
+        )

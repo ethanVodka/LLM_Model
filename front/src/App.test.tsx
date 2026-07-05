@@ -23,7 +23,7 @@ describe('App', () => {
       screen.getByRole('heading', { name: '小規模LLMを、仕組みから学ぶ' }),
     ).toBeInTheDocument()
     expect(screen.getByText('MiniDecoderLM')).toBeInTheDocument()
-    expect(screen.getByText('3,487,232')).toBeInTheDocument()
+    expect(screen.getByText('478,720')).toBeInTheDocument()
   })
 
   it('ハンバーガーボタンでメニューを折りたたむ', async () => {

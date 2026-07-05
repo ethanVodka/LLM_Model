@@ -112,6 +112,44 @@ npm.cmd --prefix front run dev
 
 `http://localhost:5173` の生成フォームはVite proxy経由で `POST /api/generate` を呼び出します。APIの動作確認は `http://localhost:8000/api/health`、OpenAPI UIは `http://localhost:8000/docs` で行えます。Dockerでは `docker compose up api` を使用します。
 
+## 簡単な会話デモ
+
+48件の人手作成会話を使い、`<assistant>` より後ろだけに損失を適用するSFTを実行します。約48万パラメータのCPU用モデルで、挨拶、自己紹介、能力、基本用語など限定された質問へ回答します。
+
+```powershell
+uv run --project back --extra cpu mini-llm-corpus `
+  --config configs/data/corpus_chat_demo.yaml `
+  --output data/processed/chat_demo/corpus.jsonl `
+  --report artifacts/data/chat_demo/report.json
+uv run --project back --extra cpu mini-llm-tokenizer train `
+  --config configs/tokenizer/chat_demo.yaml `
+  --model-config configs/model/chat_demo.yaml `
+  --corpus data/processed/chat_demo/corpus.jsonl `
+  --output artifacts/tokenizer/chat_demo.json
+uv run --project back --extra cpu mini-llm-data prepare-sft `
+  --config configs/data/chat_demo.yaml `
+  --model-config configs/model/chat_demo.yaml `
+  --tokenizer artifacts/tokenizer/chat_demo.json `
+  --corpus data/processed/chat_demo/corpus.jsonl `
+  --output-dir artifacts/datasets/chat_demo
+uv run --project back --extra cpu mini-llm-train `
+  --model-config configs/model/chat_demo.yaml `
+  --training-config configs/training/chat_demo.yaml `
+  --dataset-dir artifacts/datasets/chat_demo `
+  --checkpoint artifacts/checkpoints/chat_demo/latest.pt `
+  --metrics artifacts/experiments/chat_demo/metrics.jsonl --device cpu
+```
+
+会話を直接確認する例:
+
+```powershell
+uv run --project back --extra cpu mini-llm-generate "こんにちは" --chat `
+  --checkpoint artifacts/checkpoints/chat_demo/latest.pt `
+  --tokenizer artifacts/tokenizer/chat_demo.json --temperature 0 --device cpu
+```
+
+未知の知識や言い換えへ一般化できる段階ではありません。これはSFT経路と画面連携を確認する会話デモです。
+
 ## 固定評価
 
 同じvalidation配列とプロンプト集で、損失、Perplexity、生成結果を記録します。

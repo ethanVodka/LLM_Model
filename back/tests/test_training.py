@@ -97,6 +97,15 @@ def test_rejects_mismatched_loss_shapes() -> None:
         language_model_loss(torch.zeros((2, 3, 4)), torch.zeros((2, 2), dtype=torch.long))
 
 
+def test_language_model_loss_ignores_masked_targets() -> None:
+    logits = torch.zeros((1, 2, 4))
+    targets = torch.tensor([[-100, 0]])
+
+    loss = language_model_loss(logits, targets)
+
+    assert loss.item() == pytest.approx(np.log(4))
+
+
 def test_resumes_exactly_and_appends_experiment_metrics(tmp_path: Path) -> None:
     train_dataset = save_dataset(tmp_path / "train.npy", rows=8)
     validation_dataset = save_dataset(tmp_path / "validation.npy", rows=4)

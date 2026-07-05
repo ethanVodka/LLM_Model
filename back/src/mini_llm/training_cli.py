@@ -11,7 +11,7 @@ from typing import Any
 import torch
 
 from mini_llm.config import ModelConfig
-from mini_llm.dataset import NextTokenDataset
+from mini_llm.dataset import MaskedNextTokenDataset, NextTokenDataset
 from mini_llm.model import MiniDecoderLM
 from mini_llm.training import TrainingConfig, TrainingMetrics, set_seed, train_model
 
@@ -66,8 +66,20 @@ def main() -> None:
     # モデル初期化も再現対象に含めるため、構築よりseedを固定する。
     set_seed(training_config.seed)
     model = MiniDecoderLM(model_config)
-    train_dataset = NextTokenDataset(args.dataset_dir / "train.npy")
-    validation_dataset = NextTokenDataset(args.dataset_dir / "validation.npy")
+    train_dataset: MaskedNextTokenDataset | NextTokenDataset
+    validation_dataset: MaskedNextTokenDataset | NextTokenDataset
+    if metadata.get("objective") == "assistant-response":
+        train_dataset = MaskedNextTokenDataset(
+            args.dataset_dir / "train_inputs.npy",
+            args.dataset_dir / "train_targets.npy",
+        )
+        validation_dataset = MaskedNextTokenDataset(
+            args.dataset_dir / "validation_inputs.npy",
+            args.dataset_dir / "validation_targets.npy",
+        )
+    else:
+        train_dataset = NextTokenDataset(args.dataset_dir / "train.npy")
+        validation_dataset = NextTokenDataset(args.dataset_dir / "validation.npy")
 
     print(f"device={device.type}")
     print(f"parameters={model.parameter_count():,}")

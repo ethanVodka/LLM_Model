@@ -1,0 +1,10 @@
+vocab_size: 512
+min_frequency: 1
+special_tokens:
+  - <pad>
+  - <unk>
+  - <bos>
+  - <eos>
+  - <system>
+  - <user>
+  - <assistant>

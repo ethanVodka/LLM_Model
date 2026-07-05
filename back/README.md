@@ -48,6 +48,17 @@ uv run --project back --extra cpu mini-llm-generate "こんにちは" --temperat
 
 `temperature=0` はgreedy生成、正の値はtop-k samplingで使う確率分布の鋭さを制御します。
 
+会話デモでは `prepare-sft` がsystem／user部分を損失から除外し、assistant回答だけを学習対象にします。
+
+```powershell
+uv run --project back --extra cpu mini-llm-data prepare-sft `
+  --config configs/data/chat_demo.yaml `
+  --model-config configs/model/chat_demo.yaml `
+  --tokenizer artifacts/tokenizer/chat_demo.json `
+  --corpus data/processed/chat_demo/corpus.jsonl `
+  --output-dir artifacts/datasets/chat_demo
+```
+
 ## API
 
 ```powershell

@@ -14,16 +14,16 @@ type ChatMessage = Readonly<{
 }>
 
 const SUGGESTIONS = [
-  'Pythonで関数を定義して',
-  'こんにちは、今日は',
-  'TypeScriptの型は',
+  'こんにちは',
+  '何ができますか？',
+  '言語モデルとは何ですか？',
 ] as const
 
 export function ChatPage() {
   const [prompt, setPrompt] = useState('')
   const [messages, setMessages] = useState<readonly ChatMessage[]>([])
   const [maxNewTokens, setMaxNewTokens] = useState(50)
-  const [temperature, setTemperature] = useState(0.8)
+  const [temperature, setTemperature] = useState(0)
   const [topK, setTopK] = useState(50)
   const [error, setError] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -76,7 +76,7 @@ export function ChatPage() {
       <header className="chat-header">
         <div>
           <h1 id="chat-title">Mini LLM</h1>
-          <p>20 step smoke checkpoint</p>
+          <p>400 step conversation demo</p>
         </div>
         <span className="model-status">ローカル</span>
       </header>
@@ -87,8 +87,8 @@ export function ChatPage() {
             <div className="model-mark" aria-hidden="true">
               L
             </div>
-            <h2>何を生成しますか？</h2>
-            <p>現在は学習パイプライン検証用の小型モデルです。</p>
+            <h2>何を話しますか？</h2>
+            <p>簡単な日本語の会話を学習した小型モデルです。</p>
             <div className="suggestion-grid">
               {SUGGESTIONS.map((suggestion) => (
                 <button
