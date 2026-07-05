@@ -35,6 +35,7 @@ dev = [
 
 [project.scripts]
 mini-llm-corpus = "mini_llm.corpus_cli:main"
+mini-llm-conversations = "mini_llm.conversation_prepare_cli:main"
 mini-llm-data = "mini_llm.data_cli:main"
 mini-llm-evaluate = "mini_llm.evaluation_cli:main"
 mini-llm-generate = "mini_llm.inference_cli:main"

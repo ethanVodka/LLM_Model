@@ -126,6 +126,29 @@ def set_seed(seed: int) -> None:
         torch.cuda.manual_seed_all(seed)
 
 
+def initialize_model_from_checkpoint(
+    model: MiniDecoderLM,
+    checkpoint_path: str | Path,
+    *,
+    device: torch.device,
+) -> int:
+    """同一構成のチェックポイントからモデル重みだけを読み、学習stepを返す。"""
+
+    raw: Any = torch.load(Path(checkpoint_path), map_location=device, weights_only=True)
+    if not isinstance(raw, dict):
+        raise ValueError("initialization checkpoint must be a mapping")
+    if raw.get("model_config") != asdict(model.config):
+        raise ValueError("initialization checkpoint model_config must match the current model")
+    model_state = raw.get("model_state_dict")
+    step = raw.get("step")
+    if not isinstance(model_state, dict):
+        raise ValueError("initialization checkpoint must contain model state")
+    if not isinstance(step, int) or isinstance(step, bool) or step < 0:
+        raise ValueError("initialization checkpoint step must be a non-negative integer")
+    model.load_state_dict(model_state)
+    return step
+
+
 def language_model_loss(logits: Tensor, targets: Tensor) -> Tensor:
     """`[batch, sequence, vocab]`の予測と正解IDから平均損失を返す。"""
 

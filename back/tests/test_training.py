@@ -8,7 +8,12 @@ import torch
 from mini_llm.config import ModelConfig
 from mini_llm.dataset import NextTokenDataset
 from mini_llm.model import MiniDecoderLM
-from mini_llm.training import TrainingConfig, language_model_loss, train_model
+from mini_llm.training import (
+    TrainingConfig,
+    initialize_model_from_checkpoint,
+    language_model_loss,
+    train_model,
+)
 
 
 def make_model() -> MiniDecoderLM:
@@ -177,3 +182,36 @@ def test_resumes_exactly_and_appends_experiment_metrics(tmp_path: Path) -> None:
     metrics = [json.loads(line) for line in metrics_path.read_text().splitlines()]
     assert [metric["step"] for metric in metrics] == [1, 2, 3, 4]
     assert metrics[-1]["tokens_seen"] == 32
+
+
+def test_initializes_only_model_weights_from_checkpoint(tmp_path: Path) -> None:
+    source_model = make_model()
+    checkpoint_path = tmp_path / "source" / "latest.pt"
+    train_model(
+        source_model,
+        save_dataset(tmp_path / "train.npy", rows=4),
+        save_dataset(tmp_path / "validation.npy", rows=2),
+        TrainingConfig(
+            batch_size=2,
+            max_steps=1,
+            learning_rate=0.001,
+            weight_decay=0.0,
+            grad_clip_norm=1.0,
+            eval_interval=1,
+            checkpoint_interval=1,
+            seed=42,
+        ),
+        checkpoint_path,
+        device=torch.device("cpu"),
+    )
+    initialized_model = make_model()
+
+    source_step = initialize_model_from_checkpoint(
+        initialized_model,
+        checkpoint_path,
+        device=torch.device("cpu"),
+    )
+
+    assert source_step == 1
+    for name, value in source_model.state_dict().items():
+        assert torch.equal(value, initialized_model.state_dict()[name])

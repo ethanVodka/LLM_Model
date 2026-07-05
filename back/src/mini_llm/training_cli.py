@@ -13,7 +13,13 @@ import torch
 from mini_llm.config import ModelConfig
 from mini_llm.dataset import MaskedNextTokenDataset, NextTokenDataset
 from mini_llm.model import MiniDecoderLM
-from mini_llm.training import TrainingConfig, TrainingMetrics, set_seed, train_model
+from mini_llm.training import (
+    TrainingConfig,
+    TrainingMetrics,
+    initialize_model_from_checkpoint,
+    set_seed,
+    train_model,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -40,6 +46,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="resume model and optimizer state from a training checkpoint",
     )
     parser.add_argument(
+        "--initialize-from",
+        type=Path,
+        help="load model weights but start with a fresh optimizer and step counter",
+    )
+    parser.add_argument(
         "--metrics",
         type=Path,
         default=Path("artifacts/experiments/tiny/metrics.jsonl"),
@@ -55,6 +66,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
+    if args.resume is not None and args.initialize_from is not None:
+        raise ValueError("--resume and --initialize-from cannot be used together")
     model_config = ModelConfig.from_yaml(args.model_config)
     training_config = TrainingConfig.from_yaml(args.training_config)
     if args.max_steps is not None:
@@ -66,6 +79,13 @@ def main() -> None:
     # モデル初期化も再現対象に含めるため、構築よりseedを固定する。
     set_seed(training_config.seed)
     model = MiniDecoderLM(model_config)
+    if args.initialize_from is not None:
+        source_step = initialize_model_from_checkpoint(
+            model,
+            args.initialize_from,
+            device=device,
+        )
+        print(f"initialized_from={args.initialize_from} source_step={source_step}")
     train_dataset: MaskedNextTokenDataset | NextTokenDataset
     validation_dataset: MaskedNextTokenDataset | NextTokenDataset
     if metadata.get("objective") == "assistant-response":

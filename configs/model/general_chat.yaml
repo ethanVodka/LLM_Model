@@ -1,0 +1,8 @@
+# 知識事前学習と会話SFTを同じ重みで行うCPU向け約150万パラメータ構成
+vocab_size: 2048
+context_length: 128
+d_model: 192
+n_heads: 4
+n_layers: 3
+d_ff: 768
+dropout: 0.1
