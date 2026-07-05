@@ -141,13 +141,7 @@ def prepare_corpus(
         for record in prepared:
             file.write(
                 json.dumps(
-                    {
-                        "id": record.id,
-                        "text": record.text,
-                        "source": record.source,
-                        "license": record.license,
-                        "language": record.language,
-                    },
+                    _record_to_dict(record),
                     ensure_ascii=False,
                     sort_keys=True,
                 )
@@ -226,3 +220,18 @@ def _reject_sensitive_text(record_id: str, text: str) -> None:
 
 def _sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _record_to_dict(record: CorpusRecord) -> dict[str, str]:
+    output = {
+        "id": record.id,
+        "text": record.text,
+        "source": record.source,
+        "license": record.license,
+        "language": record.language,
+    }
+    if record.attribution is not None:
+        output["attribution"] = record.attribution
+    if record.revision is not None:
+        output["revision"] = record.revision
+    return output

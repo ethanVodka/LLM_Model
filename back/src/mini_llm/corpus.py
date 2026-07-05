@@ -20,6 +20,8 @@ class CorpusRecord:
     source: str
     license: str
     language: str
+    attribution: str | None = None
+    revision: str | None = None
 
 
 def iter_jsonl_records(paths: Sequence[str | Path]) -> Iterator[CorpusRecord]:
@@ -56,6 +58,8 @@ def iter_jsonl_records(paths: Sequence[str | Path]) -> Iterator[CorpusRecord]:
                     source=raw["source"],
                     license=raw["license"],
                     language=raw["language"],
+                    attribution=_optional_string(raw, "attribution", path, line_number),
+                    revision=_optional_string(raw, "revision", path, line_number),
                 )
                 if record.id in seen_ids:
                     raise ValueError(f"duplicate corpus id at {path}:{line_number}: {record.id}")
@@ -68,3 +72,17 @@ def iter_jsonl_texts(paths: Sequence[str | Path]) -> Iterator[str]:
 
     for record in iter_jsonl_records(paths):
         yield record.text
+
+
+def _optional_string(
+    raw: dict[object, object],
+    field: str,
+    path: Path,
+    line_number: int,
+) -> str | None:
+    value = raw.get(field)
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field} must be a non-empty string at {path}:{line_number}")
+    return value

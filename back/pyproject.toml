@@ -41,6 +41,7 @@ mini-llm-generate = "mini_llm.inference_cli:main"
 mini-llm-info = "mini_llm.cli:main"
 mini-llm-tokenizer = "mini_llm.tokenizer_cli:main"
 mini-llm-train = "mini_llm.training_cli:main"
+mini-llm-wikipedia = "mini_llm.wikipedia_cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

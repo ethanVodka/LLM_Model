@@ -74,3 +74,11 @@ uv run --project back --extra cpu mini-llm-corpus
 ```
 
 `configs/data/corpus_v1.yaml` のmanifestと入力JSONLの出典・ライセンスが一致することを確認し、NFKC正規化、改行統一、完全一致重複除去、文字数フィルタ、主要な秘密情報パターン検査を行います。出力は `data/processed/v1/corpus.jsonl`、監査レポートは `artifacts/data/v1/report.json` です。
+
+固定した日本語Wikipedia記事の冒頭抜粋を取得する場合:
+
+```powershell
+uv run --project back --extra cpu mini-llm-wikipedia
+```
+
+WikimediaのAPI方針に従うUser-Agentを使い、20記事ずつ直列に取得します。各レコードにrevision ID、帰属用恒久URL、`CC-BY-SA-4.0` を保存します。

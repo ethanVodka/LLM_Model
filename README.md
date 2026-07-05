@@ -139,6 +139,20 @@ uv run --project back --extra cpu mini-llm-data prepare `
 
 v1トークナイザーは `<system>`、`<user>`、`<assistant>` を単一トークンとして扱います。現在の38文書はパイプライン検証用であり、会話品質を得るデータ量ではありません。
 
+## 日本語Wikipedia知識データ
+
+`configs/data/wikipedia_ja_v1.yaml` で固定した100記事の冒頭抜粋を、Wikimedia APIへ負荷をかけない逐次リクエストで取得します。
+
+```powershell
+uv run --project back --extra cpu mini-llm-wikipedia
+uv run --project back --extra cpu mini-llm-corpus `
+  --config configs/data/corpus_knowledge_v1.yaml `
+  --output data/processed/knowledge_v1/corpus.jsonl `
+  --report artifacts/data/knowledge_v1/report.json
+```
+
+各JSONLレコードに固定revision IDと恒久URLを保存し、CC BY-SA 4.0の帰属先を追跡します。取得データと生成コーパスはGit管理外です。再配布や公開学習に使う場合は、帰属と継承条件を別途確認してください。
+
 ## 現在の範囲
 
 `configs/model/tiny.yaml` は実装確認用であり、実用品質のモデルではありません。学習データと生成物はGit管理外です。データセットを追加するときは、出典、ライセンス、利用条件を必ず記録してください。
