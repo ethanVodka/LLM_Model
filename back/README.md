@@ -29,3 +29,12 @@ uv run --project back --extra cpu mini-llm-train --device cpu
 ```
 
 `configs/training/tiny.yaml` に従い、AdamW、Cross Entropy、勾配クリッピングを使っ20 stepだけ学習します。チェックポイントにはモデル、Optimizer、設定、最終指標を保存します。
+
+## 生成
+
+```powershell
+uv run --project back --extra cpu mini-llm-generate "Pythonで" --device cpu
+uv run --project back --extra cpu mini-llm-generate "こんにちは" --temperature 0
+```
+
+`temperature=0` はgreedy生成、正の値はtop-k samplingで使う確率分布の鋭さを制御します。

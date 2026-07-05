@@ -82,6 +82,16 @@ uv run --project back --extra cpu mini-llm-train --device cpu
 
 学習中はtrain・validation lossと勾配normを表示し、最終状態をGit管理外の `artifacts/checkpoints/tiny/latest.pt` へ保存します。この20 step設定は学習処理の検証用であり、生成品質を得るための学習量ではありません。
 
+## 文字列生成
+
+学習済みチェックポイントから、temperatureとtop-kを使って1トークンずつ生成します。
+
+```powershell
+uv run --project back --extra cpu mini-llm-generate "Pythonで" --device cpu
+```
+
+決定的なgreedy生成は `--temperature 0`、生成長の変更は `--max-new-tokens 100` を指定します。20 stepのスモーク学習ではパイプラインの接続だけを確認し、文章の意味や正確さは評価対象にしません。
+
 ## 現在の範囲
 
 `configs/model/tiny.yaml` は実装確認用であり、実用品質のモデルではありません。学習データと生成物はGit管理外です。データセットを追加するときは、出典、ライセンス、利用条件を必ず記録してください。
