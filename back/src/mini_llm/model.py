@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import torch
 from torch import Tensor, nn
 
@@ -93,7 +95,7 @@ class MiniDecoderLM(nn.Module):
             device=input_ids.device,
         )
         hidden = self.blocks(hidden, mask=causal_mask, is_causal=True)
-        return self.lm_head(self.final_norm(hidden))
+        return cast(Tensor, self.lm_head(self.final_norm(hidden)))
 
     def parameter_count(self) -> int:
         """共有済みの重みを重複計上せず、モデルの全パラメータ数を返す。"""

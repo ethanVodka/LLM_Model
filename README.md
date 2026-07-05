@@ -11,6 +11,7 @@ uv python install 3.12.13
 uv sync --project back --frozen --extra cpu
 back\.venv\Scripts\Activate.ps1
 pytest back/tests
+mypy --config-file back/pyproject.toml back/src
 ```
 
 GPU版（CUDA 13.0）を利用する環境では、CPU版と同時に指定せず次を実行します。
@@ -149,6 +150,45 @@ uv run --project back --extra cpu mini-llm-generate "こんにちは" --chat `
 ```
 
 未知の知識や言い換えへ一般化できる段階ではありません。これはSFT経路と画面連携を確認する会話デモです。
+
+## Qwen3-1.7B QLoRA
+
+未知の言い換えへ対応する実用会話トラックでは、Apache 2.0の `Qwen/Qwen3-1.7B` を固定revisionで使用します。自作 `MiniDecoderLM` は仕組みを学ぶトラックとして残し、混同しません。RTX 3060 Ti 8GBでは4-bit NF4量子化とLoRA rank 8を使用します。
+
+CPU環境を保持したままGPU専用環境を作ります。
+
+```powershell
+$env:UV_PROJECT_ENVIRONMENT = "back/.venv-gpu"
+uv sync --project back --frozen --extra gpu --extra qlora
+```
+
+会話データを生成・変換します。
+
+```powershell
+back\.venv\Scripts\python.exe -m mini_llm.conversation_prepare_cli
+uv run --project back --extra cpu mini-llm-corpus `
+  --config configs/data/corpus_sft_v1.yaml `
+  --output data/processed/sft_v1/corpus.jsonl `
+  --report artifacts/data/sft_v1/report.json
+back\.venv\Scripts\python.exe -m mini_llm.qwen_data_cli
+```
+
+初回は基盤モデルを取得して4-bit推論を確認します。モデルは `artifacts/models/huggingface/` に保存され、Git管理外です。
+
+```powershell
+back\.venv-gpu\Scripts\python.exe back/scripts/generate_qwen.py `
+  "プログラミング初心者は何から始めればよいですか？"
+```
+
+QLoRA学習とadapter付きAPIの起動:
+
+```powershell
+back\.venv-gpu\Scripts\python.exe back/scripts/train_qwen_qlora.py
+back\.venv-gpu\Scripts\python.exe back/scripts/serve_qwen.py
+npm.cmd --prefix front run dev
+```
+
+adapterは `artifacts/adapters/qwen3_1_7b_ja/` に保存されます。40 step設定はQLoRA経路の検証用です。未知質問には回答できますが、最新情報の作り話などは残るため、固定評価と安全性データの改善が必要です。
 
 ## 固定評価
 

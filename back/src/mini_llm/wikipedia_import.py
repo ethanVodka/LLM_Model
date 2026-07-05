@@ -190,9 +190,11 @@ def _extract_pages(response: object) -> list[dict[str, Any]]:
     query = response.get("query")
     if not isinstance(query, dict) or not isinstance(query.get("pages"), list):
         raise ValueError("Wikipedia API response is missing query.pages")
-    pages = query["pages"]
-    if not all(isinstance(page, dict) for page in pages):
-        raise ValueError("Wikipedia API pages must be mappings")
+    pages: list[dict[str, Any]] = []
+    for page in query["pages"]:
+        if not isinstance(page, dict):
+            raise ValueError("Wikipedia API pages must be mappings")
+        pages.append(page)
     return pages
 
 

@@ -76,7 +76,7 @@ export function ChatPage() {
       <header className="chat-header">
         <div>
           <h1 id="chat-title">Mini LLM</h1>
-          <p>400 step conversation demo</p>
+          <p>Qwen3-1.7B + LoRA</p>
         </div>
         <span className="model-status">ローカル</span>
       </header>
@@ -88,7 +88,7 @@ export function ChatPage() {
               L
             </div>
             <h2>何を話しますか？</h2>
-            <p>簡単な日本語の会話を学習した小型モデルです。</p>
+            <p>未知の質問にも対応するローカルQLoRAモデルです。</p>
             <div className="suggestion-grid">
               {SUGGESTIONS.map((suggestion) => (
                 <button

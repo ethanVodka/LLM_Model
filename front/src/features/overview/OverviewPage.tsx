@@ -14,11 +14,11 @@ export function OverviewPage() {
           </div>
           <div>
             <dt>Parameters</dt>
-            <dd>478,720</dd>
+            <dd>1,729,291,264</dd>
           </div>
           <div>
             <dt>Phase</dt>
-            <dd>Conversation SFT demo</dd>
+            <dd>Qwen3 QLoRA</dd>
           </div>
         </dl>
         <div className="pipeline-card">
