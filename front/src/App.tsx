@@ -16,7 +16,7 @@ export function App() {
           </div>
           <div>
             <dt>Parameters</dt>
-            <dd>4,273,664</dd>
+            <dd>3,487,232</dd>
           </div>
           <div>
             <dt>Phase</dt>

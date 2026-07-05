@@ -1,5 +1,5 @@
-# CPUで実装と学習パイプラインを確認するための約430万パラメータ構成
-vocab_size: 4096
+# CPUで実装と学習パイプラインを確認するための約350万パラメータ構成
+vocab_size: 1024
 context_length: 256
 d_model: 256
 n_heads: 4

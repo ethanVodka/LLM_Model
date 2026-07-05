@@ -18,5 +18,6 @@ RUN uv sync --project /workspace/back --frozen --extra cpu
 
 COPY back/tests /workspace/back/tests
 COPY configs /workspace/configs
+COPY data/samples /workspace/data/samples
 
 CMD ["pytest", "back/tests"]

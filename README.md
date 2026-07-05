@@ -50,6 +50,17 @@ npm --prefix front run lint
 npm --prefix front run format:check
 ```
 
+## トークナイザー
+
+小規模な合成コーパスから、モデルと同じ1,024語彙のByte-level BPEを学習します。
+
+```powershell
+uv run --project back --extra cpu mini-llm-tokenizer train
+uv run --project back --extra cpu mini-llm-tokenizer encode "こんにちは、Pythonで学習します。"
+```
+
+学習結果はGit管理外の `artifacts/tokenizer/tiny.json` に保存されます。サンプルコーパスはパイプライン検証専用であり、実用モデルの学習データではありません。
+
 ## 現在の範囲
 
 `configs/model/tiny.yaml` は実装確認用であり、実用品質のモデルではありません。学習データと生成物はGit管理外です。データセットを追加するときは、出典、ライセンス、利用条件を必ず記録してください。
