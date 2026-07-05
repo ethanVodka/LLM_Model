@@ -9,6 +9,8 @@ npm install
 npm run dev
 ```
 
+別ターミナルでPython APIをポート8000に起動してください。開発サーバーは `/api` を `http://127.0.0.1:8000` へproxyします。別ホストのAPIを使う場合は `VITE_API_BASE_URL` を設定します。
+
 - `npm run build` — TypeScript型検査と本番ビルド
 - `npm run test` — VitestとTesting Libraryによるテスト
 - `npm run lint` — Oxlintによる静的検査（`any`禁止を含む）

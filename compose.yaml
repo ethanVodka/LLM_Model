@@ -1,4 +1,21 @@
 services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./back:/workspace/back
+      - ./configs:/workspace/configs
+      - ./data:/workspace/data
+      - ./artifacts:/workspace/artifacts
+    working_dir: /workspace
+    command: ["uvicorn", "mini_llm.api:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+
   trainer:
     build:
       context: .
@@ -13,4 +30,3 @@ services:
       - ./artifacts:/workspace/artifacts
     working_dir: /workspace
     command: ["pytest", "back/tests"]
-

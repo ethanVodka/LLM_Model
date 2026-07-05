@@ -9,9 +9,11 @@ description = "A small decoder-only language model for learning"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+  "fastapi==0.139.0",
   "numpy==2.5.0",
   "PyYAML==6.0.3",
   "tokenizers==0.23.1",
+  "uvicorn==0.50.0",
 ]
 
 [project.optional-dependencies]
@@ -24,6 +26,7 @@ gpu = [
 
 [dependency-groups]
 dev = [
+  "httpx2==2.5.0",
   "mypy==1.20.2",
   "pytest==8.4.2",
   "ruff==0.15.20",

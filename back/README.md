@@ -38,3 +38,14 @@ uv run --project back --extra cpu mini-llm-generate "こんにちは" --temperat
 ```
 
 `temperature=0` はgreedy生成、正の値はtop-k samplingで使う確率分布の鋭さを制御します。
+
+## API
+
+```powershell
+uv run --project back --extra cpu uvicorn mini_llm.api:app --reload --port 8000
+```
+
+- `GET /api/health` — モデル読込状態を確認
+- `POST /api/generate` — プロンプトと生成設定から文字列を生成
+
+起動時にチェックポイントとトークナイザーを1回だけ読み込みます。パスは `.env` の `CHECKPOINT_PATH` と `TOKENIZER_PATH` で変更できます。

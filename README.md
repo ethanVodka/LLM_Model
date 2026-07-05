@@ -92,6 +92,17 @@ uv run --project back --extra cpu mini-llm-generate "Pythonで" --device cpu
 
 決定的なgreedy生成は `--temperature 0`、生成長の変更は `--max-new-tokens 100` を指定します。20 stepのスモーク学習ではパイプラインの接続だけを確認し、文章の意味や正確さは評価対象にしません。
 
+## APIと生成画面
+
+学習済みチェックポイントを用意し、2つのPowerShellでAPIとViteを起動します。
+
+```powershell
+uv run --project back --extra cpu uvicorn mini_llm.api:app --reload --port 8000
+npm.cmd --prefix front run dev
+```
+
+`http://localhost:5173` の生成フォームはVite proxy経由で `POST /api/generate` を呼び出します。APIの動作確認は `http://localhost:8000/api/health`、OpenAPI UIは `http://localhost:8000/docs` で行えます。Dockerでは `docker compose up api` を使用します。
+
 ## 現在の範囲
 
 `configs/model/tiny.yaml` は実装確認用であり、実用品質のモデルではありません。学習データと生成物はGit管理外です。データセットを追加するときは、出典、ライセンス、利用条件を必ず記録してください。

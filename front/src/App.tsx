@@ -1,29 +1,24 @@
+import { useState } from 'react'
 import './App.css'
+import { AppSidebar, type AppView } from './components/AppSidebar'
+import { ChatPage } from './features/chat/ChatPage'
+import { OverviewPage } from './features/overview/OverviewPage'
 
 export function App() {
+  const [activeView, setActiveView] = useState<AppView>('chat')
+  const [isMenuOpen, setIsMenuOpen] = useState(true)
+
   return (
-    <main className="app-shell">
-      <section className="hero" aria-labelledby="app-title">
-        <p className="eyebrow">Learning LLM</p>
-        <h1 id="app-title">小規模LLMを、仕組みから学ぶ</h1>
-        <p className="summary">
-          日本語とコードを扱うモデルを段階的に実装し、学習・評価・改善の過程を可視化します。
-        </p>
-        <dl className="status-list" aria-label="現在の開発状況">
-          <div>
-            <dt>Model</dt>
-            <dd>MiniDecoderLM</dd>
-          </div>
-          <div>
-            <dt>Parameters</dt>
-            <dd>3,487,232</dd>
-          </div>
-          <div>
-            <dt>Phase</dt>
-            <dd>Foundation</dd>
-          </div>
-        </dl>
-      </section>
-    </main>
+    <div className="workspace">
+      <AppSidebar
+        activeView={activeView}
+        isOpen={isMenuOpen}
+        onToggle={() => setIsMenuOpen((current) => !current)}
+        onViewChange={setActiveView}
+      />
+      <main className="content-shell">
+        {activeView === 'chat' ? <ChatPage /> : <OverviewPage />}
+      </main>
+    </div>
   )
 }
